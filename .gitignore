@@ -22,6 +22,7 @@ prisma/*.db-journal
 .vscode/*
 !.vscode/extensions.json
 .idea
+.claude/
 .DS_Store
 *.suo
 *.ntvs*
