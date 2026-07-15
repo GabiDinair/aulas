@@ -1,0 +1,234 @@
+.aluno-hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 26px 28px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.aluno-hero.aniversario {
+  background: linear-gradient(160deg, var(--gold-soft) 0%, var(--surface) 60%);
+  border-color: var(--gold-line);
+}
+
+.aluno-hero-confete {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-around;
+  font-size: 22px;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.aluno-hero-confete span {
+  animation: float 3.4s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.3s);
+}
+
+.aluno-hero-top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.aluno-hero-avatar {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.aluno-hero-top h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.aniversario-tag {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--gold), var(--rose));
+  color: #fff8ec;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.turma-tag {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--brown-500);
+}
+
+.aluno-hero-progresso {
+  max-width: 420px;
+}
+
+.aluno-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 15px 16px;
+  box-shadow: var(--shadow-sm);
+  color: var(--gold);
+}
+
+.info-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--brown-500);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 3px;
+}
+
+.info-valor {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brown-900);
+}
+
+.info-card-alerta {
+  border-color: var(--rose);
+  color: var(--rose-text);
+}
+
+.alerta-faltas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  background: linear-gradient(120deg, var(--rose) 0%, var(--surface) 130%);
+  border: 1px solid var(--rose);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 26px;
+}
+
+.alerta-faltas-titulo {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rose-text);
+  margin-bottom: 4px;
+}
+
+.alerta-faltas-texto {
+  font-size: 13px;
+  color: var(--brown-700);
+}
+
+.btn-whatsapp {
+  background: linear-gradient(135deg, #3fae63, #2f8a4d);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.alerta-faltas-sem-telefone {
+  font-size: 12.5px;
+  color: var(--brown-500);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.relatorio-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.relatorio-hint {
+  font-size: 12.5px;
+  color: var(--brown-500);
+}
+
+.relatorio-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.relatorio-actions select {
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--brown-700);
+  text-transform: capitalize;
+}
+
+.historico-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.historico-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold-line);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+}
+
+.historico-data {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: capitalize;
+  margin-bottom: 4px;
+}
+
+.historico-item p {
+  font-size: 14px;
+  color: var(--brown-700);
+}
+
+.historico-item-falta {
+  border-left-color: var(--rose);
+  background: rgba(227, 198, 189, 0.16);
+}
+
+.historico-item-falta .historico-data {
+  color: var(--rose-text);
+}
+
+p.historico-falta-texto {
+  color: var(--rose-text);
+  font-weight: 600;
+}

@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Professor {
+  id        String   @id @default(cuid())
+  nome      String
+  titulo    String   @default("Professora de Violino")
+  email     String   @unique
+  senhaHash String
+  criadoEm  DateTime @default(now())
+
+  turmas    Turma[]
+  alunos    Aluno[]
+  aulas     Aula[]
+  materiais Material[]
+}
+
+model Turma {
+  id             String   @id @default(cuid())
+  nome           String
+  diaSemana      Int
+  horario        String
+  duracao        Int
+  local          String
+  cor            String   @default("sand")
+  frequencia     String   @default("semanal") // semanal | quinzenal
+  quinzenaOffset Int      @default(0)
+  mensalidade    Float    @default(0)
+  criadoEm       DateTime @default(now())
+
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String
+
+  alunos Aluno[]
+  aulas  Aula[]
+}
+
+model Aluno {
+  id             String    @id @default(cuid())
+  nome           String
+  nascimento     String
+  nivel          String
+  progresso      Int       @default(0)
+  inicioViolino  String?
+  inicioAulas    String?
+  telefone       String?
+  criadoEm       DateTime  @default(now())
+
+  // Preenchido apenas para alunos de aula individual (turmaId nulo)
+  diaSemana      Int?
+  horario        String?
+  local          String?
+  frequencia     String?
+  quinzenaOffset Int?
+  mensalidade    Float?
+
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String
+
+  turma   Turma?  @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  turmaId String?
+
+  aulas        Aula[]
+  pagamentos   Pagamento[]
+  faltasTurma  AulaFalta[]
+}
+
+model Aula {
+  id                 String    @id @default(cuid())
+  date               String
+  horario            String
+  duracao            Int
+  tipo               String // turma | individual
+  status             String // confirmada | pendente | cancelada | concluida
+  motivoCancelamento String?
+  anotacoes          String    @default("")
+  remarcadaDe        String?
+
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String
+
+  turma   Turma?  @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  turmaId String?
+
+  aluno   Aluno?  @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  alunoId String?
+
+  faltas AulaFalta[]
+
+  @@unique([turmaId, date])
+  @@unique([alunoId, date])
+  @@index([professorId, date])
+}
+
+// Aluno de turma que faltou numa aula específica da turma
+model AulaFalta {
+  id      String @id @default(cuid())
+  aula    Aula   @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  aulaId  String
+  aluno   Aluno  @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  alunoId String
+
+  @@unique([aulaId, alunoId])
+}
+
+model Pagamento {
+  id             String   @id @default(cuid())
+  mes            String // yyyy-MM
+  valor          Float
+  dataPagamento  String
+
+  aluno   Aluno  @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  alunoId String
+
+  @@unique([alunoId, mes])
+}
+
+model Material {
+  id            String   @id @default(cuid())
+  nome          String
+  tamanho       Int
+  tipo          String
+  categoria     String   @default("Sem categoria")
+  tag           String   @default("")
+  caminhoArquivo String
+  criadoEm      DateTime @default(now())
+
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String
+}

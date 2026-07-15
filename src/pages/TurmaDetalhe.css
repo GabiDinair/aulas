@@ -1,0 +1,88 @@
+.voltar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--brown-500);
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  transition: color 0.18s ease;
+}
+
+.voltar-btn:hover {
+  color: var(--gold);
+}
+
+.turma-hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px 26px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 30px;
+  position: relative;
+  overflow: hidden;
+}
+
+.turma-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+}
+
+.turma-hero.cor-sand::before { background: var(--sand); }
+.turma-hero.cor-rose::before { background: var(--rose); }
+.turma-hero.cor-sage::before { background: var(--sage); }
+.turma-hero.cor-gold::before { background: var(--gold); }
+
+.turma-hero h2 {
+  font-size: 25px;
+  margin-bottom: 12px;
+}
+
+.turma-hero-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-size: 13.5px;
+  color: var(--brown-500);
+}
+
+.turma-hero-info span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.turma-destaque-nota {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.turma-alunos-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.secao-titulo {
+  font-size: 18px;
+}
+
+.alunos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}

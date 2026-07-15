@@ -1,0 +1,110 @@
+.page-heading {
+  margin-bottom: 24px;
+}
+
+.page-heading h2 {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.page-heading p {
+  font-size: 13.5px;
+  color: var(--brown-500);
+}
+
+.turmas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.turma-card {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.turma-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+}
+
+.turma-card.cor-sand::before { background: var(--sand); }
+.turma-card.cor-rose::before { background: var(--rose); }
+.turma-card.cor-sage::before { background: var(--sage); }
+.turma-card.cor-gold::before { background: var(--gold); }
+
+.turma-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.turma-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-alt);
+  color: var(--brown-700);
+  margin-bottom: 4px;
+}
+
+.turma-card h3 {
+  font-size: 19px;
+}
+
+.turma-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--brown-500);
+}
+
+.turma-card-info span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.turma-card-avatars {
+  display: flex;
+  margin-top: 8px;
+}
+
+.mini-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  color: var(--brown-700);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--surface);
+  margin-left: -8px;
+}
+
+.mini-avatar:first-child {
+  margin-left: 0;
+}
+
+.mini-avatar-more {
+  background: var(--bg-alt);
+  color: var(--brown-500);
+}
