@@ -1,14 +1,8 @@
 import { useState } from 'react'
 import Modal from './Modal'
+import CampoMoeda from './CampoMoeda'
 import { useAppData } from '../context/AppDataContext'
-import { DIAS_SEMANA } from '../data/helpers'
-
-const CORES = [
-  { id: 'sand', valor: 'var(--sand)' },
-  { id: 'rose', valor: 'var(--rose)' },
-  { id: 'sage', valor: 'var(--sage)' },
-  { id: 'gold', valor: 'var(--gold)' },
-]
+import { CORES_TURMA_PRESET, DIAS_SEMANA } from '../data/helpers'
 
 export default function NovaTurmaModal({ onClose }) {
   const { criarTurma } = useAppData()
@@ -20,7 +14,7 @@ export default function NovaTurmaModal({ onClose }) {
     local: '',
     frequencia: 'semanal',
     cor: 'sand',
-    mensalidade: '',
+    mensalidade: 0,
   })
 
   function atualizar(campo, valor) {
@@ -108,30 +102,31 @@ export default function NovaTurmaModal({ onClose }) {
         </label>
 
         <label className="form-field">
-          <span>Mensalidade por aluno (R$)</span>
-          <input
-            type="number"
-            min="0"
-            step="10"
-            placeholder="Ex: 220"
-            value={form.mensalidade}
-            onChange={(e) => atualizar('mensalidade', e.target.value)}
-          />
+          <span>Mensalidade por aluno</span>
+          <CampoMoeda value={form.mensalidade} onChange={(v) => atualizar('mensalidade', v)} />
         </label>
 
         <label className="form-field">
           <span>Cor de identificação</span>
           <div className="color-options">
-            {CORES.map((c) => (
+            {Object.entries(CORES_TURMA_PRESET).map(([id, hex]) => (
               <button
                 type="button"
-                key={c.id}
-                className={'color-dot' + (form.cor === c.id ? ' selected' : '')}
-                style={{ background: c.valor }}
-                onClick={() => atualizar('cor', c.id)}
-                aria-label={c.id}
+                key={id}
+                className={'color-dot' + (form.cor === id ? ' selected' : '')}
+                style={{ background: hex }}
+                onClick={() => atualizar('cor', id)}
+                aria-label={id}
               />
             ))}
+            <label className="color-dot color-dot-custom" style={{ background: form.cor.startsWith('#') ? form.cor : undefined }}>
+              <input
+                type="color"
+                value={form.cor.startsWith('#') ? form.cor : '#c9a66b'}
+                onChange={(e) => atualizar('cor', e.target.value)}
+              />
+              <span>+</span>
+            </label>
           </div>
         </label>
 

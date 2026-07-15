@@ -9,12 +9,13 @@ datasource db {
 }
 
 model Professor {
-  id        String   @id @default(cuid())
-  nome      String
-  titulo    String   @default("Professora de Violino")
-  email     String   @unique
-  senhaHash String
-  criadoEm  DateTime @default(now())
+  id         String   @id @default(cuid())
+  nome       String
+  titulo     String   @default("Professora de Violino")
+  instrumento String  @default("Violino")
+  email      String   @unique
+  senhaHash  String
+  criadoEm   DateTime @default(now())
 
   turmas    Turma[]
   alunos    Aluno[]

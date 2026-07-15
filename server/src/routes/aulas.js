@@ -34,6 +34,53 @@ router.get(
   })
 )
 
+// Cria uma aula avulsa (fora do padrão recorrente) pra um aluno ou turma já existente
+router.post(
+  '/',
+  autenticar,
+  asyncHandler(async (req, res) => {
+    const { tipo, turmaId, alunoId, date, horario, duracao } = req.body ?? {}
+
+    if (!date || !horario || (tipo !== 'turma' && tipo !== 'individual')) {
+      return res.status(400).json({ erro: 'Informe tipo, data e horário da aula.' })
+    }
+
+    let duracaoFinal = Number(duracao) || 45
+
+    if (tipo === 'turma') {
+      const turma = await prisma.turma.findUnique({ where: { id: turmaId } })
+      if (!turma || turma.professorId !== req.professorId) {
+        return res.status(404).json({ erro: 'Turma não encontrada.' })
+      }
+      const existente = await prisma.aula.findFirst({ where: { turmaId, date } })
+      if (existente) return res.status(409).json({ erro: 'Já existe uma aula nesse dia para essa turma.' })
+      duracaoFinal = Number(duracao) || turma.duracao
+    } else {
+      const aluno = await prisma.aluno.findUnique({ where: { id: alunoId } })
+      if (!aluno || aluno.professorId !== req.professorId) {
+        return res.status(404).json({ erro: 'Aluno não encontrado.' })
+      }
+      const existente = await prisma.aula.findFirst({ where: { alunoId, date } })
+      if (existente) return res.status(409).json({ erro: 'Já existe uma aula nesse dia para esse aluno.' })
+    }
+
+    const aula = await prisma.aula.create({
+      data: {
+        professorId: req.professorId,
+        tipo,
+        turmaId: tipo === 'turma' ? turmaId : null,
+        alunoId: tipo === 'individual' ? alunoId : null,
+        date,
+        horario,
+        duracao: duracaoFinal,
+        status: tipo === 'turma' ? 'confirmada' : 'pendente',
+      },
+    })
+
+    res.status(201).json(await recarregarESerializar(aula.id))
+  })
+)
+
 router.patch(
   '/:id/confirmar',
   autenticar,
@@ -50,7 +97,7 @@ router.patch(
   '/:id/cancelar',
   autenticar,
   asyncHandler(async (req, res) => {
-    const { motivo } = req.body ?? {}
+    const { motivo, escopo } = req.body ?? {}
     const aula = await buscarAulaDoProfessor(req.params.id, req.professorId)
     if (!aula) return res.status(404).json({ erro: 'Aula não encontrada.' })
 
@@ -58,6 +105,15 @@ router.patch(
       where: { id: aula.id },
       data: { status: 'cancelada', motivoCancelamento: motivo ?? null },
     })
+
+    if (escopo === 'futuras') {
+      const filtroEntidade = aula.tipo === 'turma' ? { turmaId: aula.turmaId } : { alunoId: aula.alunoId }
+      await prisma.aula.updateMany({
+        where: { ...filtroEntidade, date: { gt: aula.date }, status: { not: 'cancelada' } },
+        data: { status: 'cancelada', motivoCancelamento: motivo ?? null },
+      })
+    }
+
     res.json(await recarregarESerializar(aula.id))
   })
 )
@@ -82,6 +138,41 @@ router.patch(
         remarcadaDe: aula.date,
       },
     })
+    res.json(await recarregarESerializar(aula.id))
+  })
+)
+
+// Edita horário/duração de uma aula já agendada (não cancelada), opcionalmente aplicando a todas as próximas
+router.patch(
+  '/:id/editar',
+  autenticar,
+  asyncHandler(async (req, res) => {
+    const { horario, duracao, escopo } = req.body ?? {}
+    const aula = await buscarAulaDoProfessor(req.params.id, req.professorId)
+    if (!aula) return res.status(404).json({ erro: 'Aula não encontrada.' })
+
+    const novoHorario = horario || aula.horario
+    const novaDuracao = duracao ? Number(duracao) : aula.duracao
+
+    await prisma.aula.update({
+      where: { id: aula.id },
+      data: { horario: novoHorario, duracao: novaDuracao },
+    })
+
+    if (escopo === 'futuras') {
+      const filtroEntidade = aula.tipo === 'turma' ? { turmaId: aula.turmaId } : { alunoId: aula.alunoId }
+      await prisma.aula.updateMany({
+        where: { ...filtroEntidade, date: { gt: aula.date }, status: { not: 'cancelada' } },
+        data: { horario: novoHorario, duracao: novaDuracao },
+      })
+
+      if (aula.tipo === 'turma') {
+        await prisma.turma.update({ where: { id: aula.turmaId }, data: { horario: novoHorario, duracao: novaDuracao } })
+      } else {
+        await prisma.aluno.update({ where: { id: aula.alunoId }, data: { horario: novoHorario } })
+      }
+    }
+
     res.json(await recarregarESerializar(aula.id))
   })
 )

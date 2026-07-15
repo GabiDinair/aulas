@@ -82,13 +82,39 @@ export function AppDataProvider({ children }) {
     setAulas((prev) => prev.map((a) => (a.id === id ? atualizada : a)))
   }
 
-  async function cancelarAula(id, motivo) {
+  async function cancelarAula(id, motivo, escopo) {
     const atualizada = await chamarApi(`/api/aulas/${id}/cancelar`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ motivo }),
+      body: JSON.stringify({ motivo, escopo }),
     })
-    setAulas((prev) => prev.map((a) => (a.id === id ? atualizada : a)))
+    if (escopo === 'futuras') {
+      await recarregarAulas()
+    } else {
+      setAulas((prev) => prev.map((a) => (a.id === id ? atualizada : a)))
+    }
+  }
+
+  async function editarAula(id, dados) {
+    const atualizada = await chamarApi(`/api/aulas/${id}/editar`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados),
+    })
+    if (dados.escopo === 'futuras') {
+      await recarregarAulas()
+    } else {
+      setAulas((prev) => prev.map((a) => (a.id === id ? atualizada : a)))
+    }
+  }
+
+  async function criarAulaAvulsa(dados) {
+    await chamarApi('/api/aulas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados),
+    })
+    await recarregarAulas()
   }
 
   async function reagendarAula(id, novaData, novoHorario) {
@@ -213,6 +239,8 @@ export function AppDataProvider({ children }) {
     confirmarAula,
     cancelarAula,
     reagendarAula,
+    editarAula,
+    criarAulaAvulsa,
     salvarAnotacoes,
     salvarFaltasTurma,
     criarTurma,

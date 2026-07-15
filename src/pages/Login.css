@@ -48,6 +48,18 @@
   padding: 40px 36px 32px;
 }
 
+@media (max-width: 420px) {
+  .login-page {
+    padding: 16px;
+  }
+  .login-card {
+    padding: 30px 22px 24px;
+  }
+  .login-title {
+    font-size: 24px;
+  }
+}
+
 .login-brand {
   display: flex;
   flex-direction: column;
@@ -111,7 +123,8 @@
   letter-spacing: 0.3px;
 }
 
-.field input {
+.field input,
+.field select {
   border: 1px solid var(--border);
   background: var(--surface-soft);
   border-radius: var(--radius-sm);
@@ -121,7 +134,8 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.field input:focus {
+.field input:focus,
+.field select:focus {
   outline: none;
   border-color: var(--gold);
   box-shadow: 0 0 0 3px rgba(201, 166, 107, 0.18);

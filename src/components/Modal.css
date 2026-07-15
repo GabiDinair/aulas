@@ -67,8 +67,9 @@
   gap: 12px;
 }
 
-.form-row .field {
+.form-row .form-field {
   flex: 1;
+  min-width: 0;
 }
 
 .form-field {
@@ -138,6 +139,7 @@
 .color-options {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .color-dot {
@@ -152,6 +154,34 @@
 .color-dot.selected {
   border-color: var(--brown-700);
   transform: scale(1.1);
+}
+
+.color-dot-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-alt);
+  border: 2px dashed var(--brown-300);
+  position: relative;
+  overflow: hidden;
+}
+
+.color-dot-custom span {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--brown-500);
+  pointer-events: none;
+}
+
+.color-dot-custom input[type='color'] {
+  position: absolute;
+  inset: -4px;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
 }
 
 .modal-submit {
@@ -169,4 +199,30 @@
 .modal-submit:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal-card {
+    max-width: none;
+    max-height: 92vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .modal-header {
+    padding: 18px 18px 14px;
+  }
+
+  .modal-body {
+    padding: 16px 18px 22px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 14px;
+  }
 }

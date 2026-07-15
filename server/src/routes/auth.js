@@ -11,11 +11,17 @@ function gerarToken(professor) {
 }
 
 function serializarProfessor(professor) {
-  return { id: professor.id, nome: professor.nome, email: professor.email, titulo: professor.titulo }
+  return {
+    id: professor.id,
+    nome: professor.nome,
+    email: professor.email,
+    titulo: professor.titulo,
+    instrumento: professor.instrumento,
+  }
 }
 
 router.post('/registrar', async (req, res) => {
-  const { nome, email, senha } = req.body ?? {}
+  const { nome, email, senha, instrumento } = req.body ?? {}
   if (!nome?.trim() || !email?.trim() || !senha || senha.length < 6) {
     return res.status(400).json({ erro: 'Preencha nome, email e uma senha com pelo menos 6 caracteres.' })
   }
@@ -26,9 +32,16 @@ router.post('/registrar', async (req, res) => {
     return res.status(409).json({ erro: 'Já existe uma conta com este email.' })
   }
 
+  const instrumentoFinal = instrumento?.trim() || 'Violino'
   const senhaHash = await bcrypt.hash(senha, 10)
   const professor = await prisma.professor.create({
-    data: { nome: nome.trim(), email: emailNormalizado, senhaHash },
+    data: {
+      nome: nome.trim(),
+      email: emailNormalizado,
+      senhaHash,
+      instrumento: instrumentoFinal,
+      titulo: `Professor(a) de ${instrumentoFinal}`,
+    },
   })
 
   res.status(201).json({ token: gerarToken(professor), professor: serializarProfessor(professor) })

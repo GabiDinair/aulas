@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { format } from 'date-fns'
 import { CheckCircle2, Pencil } from 'lucide-react'
 import { avatarDe, formatarMoeda } from '../data/helpers'
+import CampoMoeda from './CampoMoeda'
 import './RegistrarPagamentoLinha.css'
 
 export default function RegistrarPagamentoLinha({ aluno, hoje, onRegistrar }) {
@@ -15,7 +16,7 @@ export default function RegistrarPagamentoLinha({ aluno, hoje, onRegistrar }) {
   }
 
   function confirmarEdicao() {
-    onRegistrar(Number(valor) || aluno.mensalidade, data)
+    onRegistrar(valor || aluno.mensalidade, data)
     setEditando(false)
   }
 
@@ -45,14 +46,7 @@ export default function RegistrarPagamentoLinha({ aluno, hoje, onRegistrar }) {
         </>
       ) : (
         <div className="pagamento-edicao">
-          <input
-            type="number"
-            min="0"
-            step="10"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            className="pagamento-edicao-valor"
-          />
+          <CampoMoeda value={valor} onChange={setValor} />
           <input type="date" value={data} onChange={(e) => setData(e.target.value)} />
           <button className="btn-mini btn-confirmar" onClick={confirmarEdicao}>Confirmar</button>
           <button className="link-voltar" onClick={() => setEditando(false)}>Voltar</button>

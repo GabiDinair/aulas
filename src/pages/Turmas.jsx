@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Clock, MapPin, Music2, Plus, Users2 } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
-import { alunosDaTurma } from '../data/helpers'
+import { alunosDaTurma, corDaTurma } from '../data/helpers'
 import NovaTurmaModal from '../components/NovaTurmaModal'
 import './Turmas.css'
 
@@ -29,7 +29,8 @@ export default function Turmas() {
           return (
             <button
               key={turma.id}
-              className={`turma-card cor-${turma.cor}`}
+              className="turma-card"
+              style={{ '--turma-cor': corDaTurma(turma.cor) }}
               onClick={() => navigate(`/dashboard/turmas/${turma.id}`)}
             >
               <div className="turma-card-icon">

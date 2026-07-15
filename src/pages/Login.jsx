@@ -4,6 +4,8 @@ import Logo from '../components/Logo'
 import { useAuth } from '../context/AuthContext'
 import './Login.css'
 
+const INSTRUMENTOS = ['Violino', 'Viola', 'Violoncelo', 'Piano', 'Violão', 'Guitarra', 'Canto', 'Flauta', 'Bateria', 'Outro']
+
 export default function Login() {
   const navigate = useNavigate()
   const { login, registrar } = useAuth()
@@ -11,6 +13,8 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [nome, setNome] = useState('')
+  const [instrumento, setInstrumento] = useState('Violino')
+  const [instrumentoOutro, setInstrumentoOutro] = useState('')
   const [erro, setErro] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [recuperarEnviado, setRecuperarEnviado] = useState(false)
@@ -39,7 +43,8 @@ export default function Login() {
     setErro('')
     setEnviando(true)
     try {
-      await registrar(nome, email, senha)
+      const instrumentoFinal = instrumento === 'Outro' ? instrumentoOutro.trim() : instrumento
+      await registrar(nome, email, senha, instrumentoFinal)
       navigate('/dashboard')
     } catch (err) {
       setErro(err.message)
@@ -144,6 +149,26 @@ export default function Login() {
                 required
               />
             </label>
+            <label className="field">
+              <span>Qual instrumento você ensina?</span>
+              <select value={instrumento} onChange={(e) => setInstrumento(e.target.value)}>
+                {INSTRUMENTOS.map((i) => (
+                  <option key={i} value={i}>{i}</option>
+                ))}
+              </select>
+            </label>
+            {instrumento === 'Outro' && (
+              <label className="field">
+                <span>Qual?</span>
+                <input
+                  type="text"
+                  placeholder="Ex: Saxofone"
+                  value={instrumentoOutro}
+                  onChange={(e) => setInstrumentoOutro(e.target.value)}
+                  required
+                />
+              </label>
+            )}
 
             {erro && <p className="login-erro">{erro}</p>}
 

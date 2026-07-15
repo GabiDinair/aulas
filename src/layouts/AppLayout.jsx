@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { BookOpen, CalendarDays, LogOut, Music2, Users, UserRound, Wallet } from 'lucide-react'
 import Logo from '../components/Logo'
 import { useAuth } from '../context/AuthContext'
+import { primeiroNome } from '../data/helpers'
 import './AppLayout.css'
 
 const NAV_ITEMS = [
@@ -58,7 +59,7 @@ export default function AppLayout() {
           </div>
           <div className="topbar-profile">
             <div className="topbar-info">
-              <p className="topbar-name">{professor?.nome}</p>
+              <p className="topbar-name">{primeiroNome(professor?.nome)}</p>
               <p className="topbar-role">{professor?.titulo}</p>
             </div>
             <div className="avatar avatar-lg">

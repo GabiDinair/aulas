@@ -92,10 +92,6 @@
   flex-wrap: wrap;
 }
 
-.pagamento-edicao-valor {
-  width: 90px;
-}
-
 .pagamento-edicao input {
   border: 1px solid var(--border);
   background: var(--surface-soft);

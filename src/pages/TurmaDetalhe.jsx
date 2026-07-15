@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Clock, MapPin, Plus, Trophy, Users2 } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
-import { alunosDaTurma, calcularFrequenciaAluno, LIMIAR_ATENCAO_FREQUENCIA, MIN_AULAS_PARA_FREQUENCIA } from '../data/helpers'
+import { alunosDaTurma, calcularFrequenciaAluno, corDaTurma, LIMIAR_ATENCAO_FREQUENCIA, MIN_AULAS_PARA_FREQUENCIA } from '../data/helpers'
 import AlunoCard from '../components/AlunoCard'
 import NovoAlunoModal from '../components/NovoAlunoModal'
 import './TurmaDetalhe.css'
@@ -46,7 +46,7 @@ export default function TurmaDetalhe() {
         <ArrowLeft size={16} strokeWidth={1.8} /> Voltar para turmas
       </button>
 
-      <div className={`turma-hero cor-${turma.cor}`}>
+      <div className="turma-hero" style={{ '--turma-cor': corDaTurma(turma.cor) }}>
         <h2>{turma.nome}</h2>
         <div className="turma-hero-info">
           <span><Clock size={15} strokeWidth={1.7} /> {turma.diaSemanaNome}, {turma.horario} ({turma.duracao} min) · {turma.frequencia === 'quinzenal' ? 'quinzenal' : 'semanal'}</span>

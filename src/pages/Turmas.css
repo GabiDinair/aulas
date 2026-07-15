@@ -38,12 +38,8 @@
   position: absolute;
   inset: 0 0 auto 0;
   height: 4px;
+  background: var(--turma-cor, var(--sand));
 }
-
-.turma-card.cor-sand::before { background: var(--sand); }
-.turma-card.cor-rose::before { background: var(--rose); }
-.turma-card.cor-sage::before { background: var(--sage); }
-.turma-card.cor-gold::before { background: var(--gold); }
 
 .turma-card:hover {
   transform: translateY(-3px);

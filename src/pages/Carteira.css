@@ -145,3 +145,18 @@
   margin-bottom: 4px;
   text-transform: capitalize;
 }
+
+@media (max-width: 480px) {
+  .carteira-resumo {
+    padding: 18px 16px;
+  }
+
+  .carteira-stat-valor {
+    font-size: 22px;
+  }
+
+  .carteira-legenda {
+    min-width: 0;
+    width: 100%;
+  }
+}

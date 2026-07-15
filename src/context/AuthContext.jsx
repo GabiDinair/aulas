@@ -41,11 +41,11 @@ export function AuthProvider({ children }) {
     setProfessor(dados.professor)
   }
 
-  async function registrar(nome, email, senha) {
+  async function registrar(nome, email, senha, instrumento) {
     const dados = await chamarApi('/api/auth/registrar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, email, senha }),
+      body: JSON.stringify({ nome, email, senha, instrumento }),
     })
     localStorage.setItem('token', dados.token)
     setToken(dados.token)

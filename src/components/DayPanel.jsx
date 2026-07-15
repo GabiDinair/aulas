@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { CalendarX2, CheckCircle2, Clock, MapPin, RotateCcw, Users2, XCircle } from 'lucide-react'
+import { CalendarX2, CheckCircle2, Clock, MapPin, Pencil, Plus, RotateCcw, Users2, XCircle } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
 import { MOTIVOS_CANCELAMENTO, alunosDaTurma } from '../data/helpers'
+import AdicionarAulaModal from './AdicionarAulaModal'
 import './DayPanel.css'
 
 const STATUS_LABEL = {
@@ -15,14 +16,34 @@ const STATUS_LABEL = {
 
 const MOTIVO_LABEL = Object.fromEntries(MOTIVOS_CANCELAMENTO.map((m) => [m.id, m.label]))
 
+function EscopoRadio({ escopo, setEscopo }) {
+  return (
+    <div className="aula-escopo">
+      <label>
+        <input type="radio" checked={escopo === 'unico'} onChange={() => setEscopo('unico')} />
+        Somente esta aula
+      </label>
+      <label>
+        <input type="radio" checked={escopo === 'futuras'} onChange={() => setEscopo('futuras')} />
+        Esta e as próximas aulas
+      </label>
+    </div>
+  )
+}
+
 function AulaCard({ aula }) {
-  const { confirmarAula, cancelarAula, reagendarAula, salvarAnotacoes, salvarFaltasTurma, alunosTurma } = useAppData()
+  const { confirmarAula, cancelarAula, reagendarAula, editarAula, salvarAnotacoes, salvarFaltasTurma, alunosTurma } = useAppData()
   const [anotacoes, setAnotacoes] = useState(aula.anotacoes)
   const [salvo, setSalvo] = useState(true)
   const [escolhendoMotivo, setEscolhendoMotivo] = useState(false)
+  const [escopoCancelar, setEscopoCancelar] = useState('unico')
   const [remarcando, setRemarcando] = useState(false)
   const [novaData, setNovaData] = useState(aula.date)
   const [novoHorario, setNovoHorario] = useState(aula.horario)
+  const [editando, setEditando] = useState(false)
+  const [horarioEdicao, setHorarioEdicao] = useState(aula.horario)
+  const [duracaoEdicao, setDuracaoEdicao] = useState(aula.duracao)
+  const [escopoEdicao, setEscopoEdicao] = useState('unico')
 
   function handleSalvar() {
     salvarAnotacoes(aula.id, anotacoes)
@@ -30,7 +51,7 @@ function AulaCard({ aula }) {
   }
 
   function handleCancelar(motivo) {
-    cancelarAula(aula.id, motivo)
+    cancelarAula(aula.id, motivo, escopoCancelar)
     setEscolhendoMotivo(false)
   }
 
@@ -40,6 +61,11 @@ function AulaCard({ aula }) {
     setRemarcando(false)
   }
 
+  function handleConfirmarEdicao() {
+    editarAula(aula.id, { horario: horarioEdicao, duracao: duracaoEdicao, escopo: escopoEdicao })
+    setEditando(false)
+  }
+
   const turmaAlunos = aula.tipo === 'turma' ? alunosDaTurma(alunosTurma, aula.turmaId) : []
 
   function toggleFalta(alunoId) {
@@ -47,6 +73,8 @@ function AulaCard({ aula }) {
     const novo = atual.includes(alunoId) ? atual.filter((id) => id !== alunoId) : [...atual, alunoId]
     salvarFaltasTurma(aula.id, novo)
   }
+
+  const nenhumaAcaoAberta = !escolhendoMotivo && !remarcando && !editando
 
   return (
     <div className={`aula-card status-${aula.status}`}>
@@ -111,8 +139,35 @@ function AulaCard({ aula }) {
         </div>
       )}
 
+      {editando && (
+        <div className="aula-remarcar-picker">
+          <p>Editar horário e duração</p>
+          <div className="aula-remarcar-campos">
+            <input type="time" value={horarioEdicao} onChange={(e) => setHorarioEdicao(e.target.value)} />
+            <input
+              type="number"
+              min="15"
+              step="5"
+              value={duracaoEdicao}
+              onChange={(e) => setDuracaoEdicao(e.target.value)}
+            />
+          </div>
+          <EscopoRadio escopo={escopoEdicao} setEscopo={setEscopoEdicao} />
+          <div className="aula-remarcar-actions">
+            <button type="button" className="btn-mini btn-confirmar" onClick={handleConfirmarEdicao}>
+              Salvar
+            </button>
+            <button type="button" className="link-voltar" onClick={() => setEditando(false)}>
+              Voltar
+            </button>
+          </div>
+        </div>
+      )}
+
       {escolhendoMotivo && (
         <div className="aula-motivo-picker">
+          <p>Aplicar a:</p>
+          <EscopoRadio escopo={escopoCancelar} setEscopo={setEscopoCancelar} />
           <p>Qual foi o motivo do cancelamento?</p>
           {MOTIVOS_CANCELAMENTO.map((m) => (
             <button key={m.id} type="button" className="btn-motivo" onClick={() => handleCancelar(m.id)}>
@@ -143,11 +198,16 @@ function AulaCard({ aula }) {
         </div>
       )}
 
-      {!escolhendoMotivo && !remarcando && (
+      {nenhumaAcaoAberta && (
         <div className="aula-actions">
           {aula.status === 'pendente' && (
             <button className="btn-mini btn-confirmar" onClick={() => confirmarAula(aula.id)}>
               <CheckCircle2 size={14} strokeWidth={1.8} /> Confirmar aula
+            </button>
+          )}
+          {(aula.status === 'pendente' || aula.status === 'confirmada') && (
+            <button className="btn-mini" onClick={() => setEditando(true)}>
+              <Pencil size={13} strokeWidth={1.8} /> Editar
             </button>
           )}
           {(aula.status === 'pendente' || aula.status === 'confirmada') && (
@@ -173,12 +233,20 @@ function AulaCard({ aula }) {
 
 export default function DayPanel({ dataStr, aulas }) {
   const data = new Date(dataStr + 'T00:00:00')
+  const [modalAberto, setModalAberto] = useState(false)
 
   return (
     <aside className="day-panel fade-in">
       <div className="day-panel-header">
-        <p className="day-panel-eyebrow">{format(data, 'EEEE', { locale: ptBR })}</p>
-        <h2 className="day-panel-date">{format(data, "d 'de' MMMM", { locale: ptBR })}</h2>
+        <div className="day-panel-header-topo">
+          <div>
+            <p className="day-panel-eyebrow">{format(data, 'EEEE', { locale: ptBR })}</p>
+            <h2 className="day-panel-date">{format(data, "d 'de' MMMM", { locale: ptBR })}</h2>
+          </div>
+          <button className="icon-btn" onClick={() => setModalAberto(true)} aria-label="Adicionar aula">
+            <Plus size={17} strokeWidth={2} />
+          </button>
+        </div>
       </div>
 
       <div className="day-panel-list">
@@ -191,6 +259,8 @@ export default function DayPanel({ dataStr, aulas }) {
           <AulaCard key={aula.id} aula={aula} />
         ))}
       </div>
+
+      {modalAberto && <AdicionarAulaModal dataStr={dataStr} onClose={() => setModalAberto(false)} />}
     </aside>
   )
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Modal from './Modal'
+import CampoMoeda from './CampoMoeda'
 import { useAppData } from '../context/AppDataContext'
 import { DIAS_SEMANA, formatarMoeda } from '../data/helpers'
 
@@ -19,7 +20,7 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao }) {
     local: '',
     frequencia: 'semanal',
     turmaId: turmaIdPadrao ?? turmas[0]?.id ?? '',
-    mensalidade: '',
+    mensalidade: 0,
   })
 
   function atualizar(campo, valor) {
@@ -165,15 +166,8 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao }) {
               </div>
             </label>
             <label className="form-field">
-              <span>Mensalidade (R$)</span>
-              <input
-                type="number"
-                min="0"
-                step="10"
-                placeholder="Ex: 320"
-                value={form.mensalidade}
-                onChange={(e) => atualizar('mensalidade', e.target.value)}
-              />
+              <span>Mensalidade</span>
+              <CampoMoeda value={form.mensalidade} onChange={(v) => atualizar('mensalidade', v)} />
             </label>
           </>
         )}

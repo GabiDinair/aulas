@@ -31,12 +31,8 @@
   position: absolute;
   inset: 0 0 auto 0;
   height: 4px;
+  background: var(--turma-cor, var(--sand));
 }
-
-.turma-hero.cor-sand::before { background: var(--sand); }
-.turma-hero.cor-rose::before { background: var(--rose); }
-.turma-hero.cor-sage::before { background: var(--sage); }
-.turma-hero.cor-gold::before { background: var(--gold); }
 
 .turma-hero h2 {
   font-size: 25px;

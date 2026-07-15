@@ -5,6 +5,30 @@ export const TAGS_MATERIAL_SUGERIDAS = ['Clássica', 'Popular', 'Folclórica', '
 
 export const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 
+export function primeiroNome(nomeCompleto) {
+  return (nomeCompleto || '').trim().split(' ')[0] || nomeCompleto
+}
+
+// Presets de cor para turmas — o valor salvo tanto pode ser uma dessas chaves quanto um hex livre (#RRGGBB)
+export const CORES_TURMA_PRESET = {
+  sand: '#EAD9B8',
+  rose: '#E3C6BD',
+  sage: '#B9C7AB',
+  gold: '#C9A66B',
+  lavanda: '#D9C7E8',
+  ceu: '#C9DCE3',
+  terracota: '#DDA98C',
+  menta: '#A8D9C4',
+  ameixa: '#C4A3C9',
+  mostarda: '#E0C25A',
+}
+
+export function corDaTurma(cor) {
+  if (!cor) return CORES_TURMA_PRESET.sand
+  if (cor.startsWith('#')) return cor
+  return CORES_TURMA_PRESET[cor] ?? CORES_TURMA_PRESET.sand
+}
+
 export const avatarPalette = [
   { bg: '#EAD9B8', text: '#93732F' },
   { bg: '#E3C6BD', text: '#9C5A4B' },
