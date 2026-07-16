@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import { Trash2 } from 'lucide-react'
 import Modal from './Modal'
 import CampoMoeda from './CampoMoeda'
+import CampoTelefone from './CampoTelefone'
 import { useAppData } from '../context/AppDataContext'
 import { DIAS_SEMANA, formatarMoeda } from '../data/helpers'
 
@@ -184,12 +185,7 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao, alunoExistente,
 
         <label className="form-field">
           <span>Telefone (WhatsApp)</span>
-          <input
-            type="tel"
-            placeholder="(11) 98765-4321"
-            value={form.telefone}
-            onChange={(e) => atualizar('telefone', e.target.value)}
-          />
+          <CampoTelefone value={form.telefone} onChange={(v) => atualizar('telefone', v)} />
         </label>
 
         {modo === 'turma' ? (

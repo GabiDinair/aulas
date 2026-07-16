@@ -1,16 +1,59 @@
 import { useMemo, useState } from 'react'
 import { addMonths, format, startOfMonth, subMonths } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, CircleCheck, CircleDollarSign, Clock3, Undo2 } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CircleDollarSign, Clock3, Undo2 } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
 import { avatarDe, formatarMoeda, listaAlunosComMensalidade } from '../data/helpers'
 import RegistrarPagamentoLinha from '../components/RegistrarPagamentoLinha'
 import './Carteira.css'
 
+const ALUNOS_INDIVIDUAIS_LABEL = 'Alunos individuais'
+
+function agruparPorTurma(lista, getTurmaNome) {
+  const mapa = new Map()
+  for (const item of lista) {
+    const chave = getTurmaNome(item) ?? ALUNOS_INDIVIDUAIS_LABEL
+    if (!mapa.has(chave)) mapa.set(chave, [])
+    mapa.get(chave).push(item)
+  }
+  const entradas = [...mapa.entries()]
+  entradas.sort((a, b) => {
+    if (a[0] === ALUNOS_INDIVIDUAIS_LABEL) return 1
+    if (b[0] === ALUNOS_INDIVIDUAIS_LABEL) return -1
+    return 0
+  })
+  return entradas
+}
+
+function BlocoPagamento({ chave, titulo, subtitulo, aberto, onToggle, children }) {
+  return (
+    <div className="pagamento-bloco">
+      <button className="pagamento-bloco-header" onClick={() => onToggle(chave)}>
+        <div>
+          <p className="pagamento-bloco-titulo">{titulo}</p>
+          <p className="pagamento-bloco-sub">{subtitulo}</p>
+        </div>
+        <ChevronDown size={17} strokeWidth={2} className={'pagamento-bloco-chevron' + (aberto ? ' aberto' : '')} />
+      </button>
+      {aberto && <div className="pagamento-bloco-conteudo">{children}</div>}
+    </div>
+  )
+}
+
 export default function Carteira() {
   const { hoje, alunosIndividuais, alunosTurma, turmas, pagamentos, registrarPagamento, removerPagamento } = useAppData()
   const [mesAtual, setMesAtual] = useState(startOfMonth(hoje))
   const [visualizacao, setVisualizacao] = useState('pendente')
+  const [blocosAbertos, setBlocosAbertos] = useState(() => new Set())
+
+  function toggleBloco(chave) {
+    setBlocosAbertos((prev) => {
+      const novo = new Set(prev)
+      if (novo.has(chave)) novo.delete(chave)
+      else novo.add(chave)
+      return novo
+    })
+  }
 
   const mesStr = format(mesAtual, 'yyyy-MM')
 
@@ -42,6 +85,9 @@ export default function Carteira() {
       pctRecebido: esperado > 0 ? Math.round((recebido / esperado) * 100) : 0,
     }
   }, [todosAlunos, pagamentosDoMes])
+
+  const blocosPendentes = useMemo(() => agruparPorTurma(pendentes, (a) => a.turmaNome), [pendentes])
+  const blocosPagos = useMemo(() => agruparPorTurma(pagos, (p) => p.aluno.turmaNome), [pagos])
 
   return (
     <div className="carteira-page">
@@ -118,15 +164,30 @@ export default function Carteira() {
           {pendentes.length === 0 ? (
             <div className="day-panel-empty"><p>Todo mundo já pagou este mês! 🎉</p></div>
           ) : (
-            pendentes.map((aluno) => (
-              <RegistrarPagamentoLinha
-                key={aluno.id}
-                aluno={aluno}
-                mesStr={mesStr}
-                hoje={hoje}
-                onRegistrar={(valor, data) => registrarPagamento(aluno.id, mesStr, valor, data)}
-              />
-            ))
+            blocosPendentes.map(([nomeGrupo, alunosGrupo]) => {
+              const chave = `pendente-${nomeGrupo}`
+              const subtotal = alunosGrupo.reduce((acc, a) => acc + a.mensalidade, 0)
+              return (
+                <BlocoPagamento
+                  key={chave}
+                  chave={chave}
+                  titulo={nomeGrupo}
+                  subtitulo={`${alunosGrupo.length} aluno${alunosGrupo.length === 1 ? '' : 's'} · ${formatarMoeda(subtotal)}`}
+                  aberto={blocosAbertos.has(chave)}
+                  onToggle={toggleBloco}
+                >
+                  {alunosGrupo.map((aluno) => (
+                    <RegistrarPagamentoLinha
+                      key={aluno.id}
+                      aluno={aluno}
+                      mesStr={mesStr}
+                      hoje={hoje}
+                      onRegistrar={(valor, data) => registrarPagamento(aluno.id, mesStr, valor, data)}
+                    />
+                  ))}
+                </BlocoPagamento>
+              )
+            })
           )}
         </div>
       )}
@@ -137,27 +198,42 @@ export default function Carteira() {
           {pagos.length === 0 ? (
             <div className="day-panel-empty"><p>Ninguém pagou ainda este mês.</p></div>
           ) : (
-            pagos.map(({ aluno, pagamento }) => {
-              const avatar = avatarDe(aluno.id, aluno.nome)
+            blocosPagos.map(([nomeGrupo, itensGrupo]) => {
+              const chave = `pago-${nomeGrupo}`
+              const subtotal = itensGrupo.reduce((acc, p) => acc + p.pagamento.valor, 0)
               return (
-                <div key={aluno.id} className="pagamento-linha">
-                  <div className="pagamento-linha-info">
-                    <div className="mini-avatar-round" style={{ background: avatar.bg, color: avatar.text }}>
-                      {avatar.iniciais}
-                    </div>
-                    <div>
-                      <p className="pagamento-nome">{aluno.nome}</p>
-                      <p className="pagamento-sub">{aluno.turmaNome ?? 'Aula particular'}</p>
-                    </div>
-                  </div>
-                  <div className="pagamento-linha-valor">
-                    <span className="pagamento-valor-pago">{formatarMoeda(pagamento.valor)}</span>
-                    <span className="pagamento-data">pago em {format(new Date(pagamento.dataPagamento + 'T00:00:00'), 'dd/MM/yyyy')}</span>
-                  </div>
-                  <button className="btn-mini btn-desfazer" onClick={() => removerPagamento(aluno.id, mesStr)}>
-                    <Undo2 size={13} strokeWidth={1.8} /> Desfazer
-                  </button>
-                </div>
+                <BlocoPagamento
+                  key={chave}
+                  chave={chave}
+                  titulo={nomeGrupo}
+                  subtitulo={`${itensGrupo.length} aluno${itensGrupo.length === 1 ? '' : 's'} · ${formatarMoeda(subtotal)}`}
+                  aberto={blocosAbertos.has(chave)}
+                  onToggle={toggleBloco}
+                >
+                  {itensGrupo.map(({ aluno, pagamento }) => {
+                    const avatar = avatarDe(aluno.id, aluno.nome)
+                    return (
+                      <div key={aluno.id} className="pagamento-linha">
+                        <div className="pagamento-linha-info">
+                          <div className="mini-avatar-round" style={{ background: avatar.bg, color: avatar.text }}>
+                            {avatar.iniciais}
+                          </div>
+                          <div>
+                            <p className="pagamento-nome">{aluno.nome}</p>
+                            <p className="pagamento-sub">{aluno.turmaNome ?? 'Aula particular'}</p>
+                          </div>
+                        </div>
+                        <div className="pagamento-linha-valor">
+                          <span className="pagamento-valor-pago">{formatarMoeda(pagamento.valor)}</span>
+                          <span className="pagamento-data">pago em {format(new Date(pagamento.dataPagamento + 'T00:00:00'), 'dd/MM/yyyy')}</span>
+                        </div>
+                        <button className="btn-mini btn-desfazer" onClick={() => removerPagamento(aluno.id, mesStr)}>
+                          <Undo2 size={13} strokeWidth={1.8} /> Desfazer
+                        </button>
+                      </div>
+                    )
+                  })}
+                </BlocoPagamento>
               )
             })
           )}
