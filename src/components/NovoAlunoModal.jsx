@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { format } from 'date-fns'
 import { Trash2 } from 'lucide-react'
 import Modal from './Modal'
 import CampoMoeda from './CampoMoeda'
@@ -8,8 +9,9 @@ import { DIAS_SEMANA, formatarMoeda } from '../data/helpers'
 const NIVEIS = ['Iniciante', 'Intermediário', 'Avançado']
 
 export default function NovoAlunoModal({ onClose, turmaIdPadrao, alunoExistente, onExcluido }) {
-  const { turmas, criarAlunoIndividual, criarAlunoTurma, editarAluno, removerAluno } = useAppData()
+  const { hoje, turmas, criarAlunoIndividual, criarAlunoTurma, editarAluno, removerAluno } = useAppData()
   const editando = Boolean(alunoExistente)
+  const hojeStr = format(hoje, 'yyyy-MM-dd')
   const [modo, setModo] = useState(() => {
     if (alunoExistente) return alunoExistente.turmaId ? 'turma' : 'individual'
     return turmaIdPadrao ? 'turma' : 'individual'
@@ -21,7 +23,7 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao, alunoExistente,
           nascimento: alunoExistente.nascimento,
           nivel: alunoExistente.nivel,
           progresso: alunoExistente.progresso,
-          inicioViolino: alunoExistente.inicioViolino ?? '',
+          inicioAulas: alunoExistente.inicioAulas ?? hojeStr,
           telefone: alunoExistente.telefone ?? '',
           diaSemana: String(alunoExistente.diaSemana ?? 2),
           horario: alunoExistente.horario ?? '15:00',
@@ -35,7 +37,7 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao, alunoExistente,
           nascimento: '',
           nivel: 'Iniciante',
           progresso: 0,
-          inicioViolino: '',
+          inicioAulas: hojeStr,
           telefone: '',
           diaSemana: '2',
           horario: '15:00',
@@ -66,7 +68,7 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao, alunoExistente,
           nascimento: form.nascimento,
           nivel: form.nivel,
           progresso: Number(form.progresso) || 0,
-          inicioViolino: form.inicioViolino || undefined,
+          inicioAulas: form.inicioAulas || hojeStr,
           telefone: form.telefone || undefined,
           turmaId: modo === 'turma' ? form.turmaId : null,
           diaSemana: form.diaSemana,
@@ -82,7 +84,7 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao, alunoExistente,
           nome: form.nome,
           nascimento: form.nascimento,
           nivel: form.nivel,
-          inicioViolino: form.inicioViolino || undefined,
+          inicioAulas: form.inicioAulas || hojeStr,
           telefone: form.telefone || undefined,
           diaSemana: form.diaSemana,
           horario: form.horario,
@@ -97,7 +99,7 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao, alunoExistente,
           nome: form.nome,
           nascimento: form.nascimento,
           nivel: form.nivel,
-          inicioViolino: form.inicioViolino || undefined,
+          inicioAulas: form.inicioAulas || hojeStr,
           telefone: form.telefone || undefined,
         })
       }
@@ -171,8 +173,13 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao, alunoExistente,
         )}
 
         <label className="form-field">
-          <span>Início no violino (se já tocava antes)</span>
-          <input type="date" value={form.inicioViolino} onChange={(e) => atualizar('inicioViolino', e.target.value)} />
+          <span>Aluno(a) da professora desde</span>
+          <input
+            type="date"
+            value={form.inicioAulas}
+            onChange={(e) => atualizar('inicioAulas', e.target.value)}
+            required
+          />
         </label>
 
         <label className="form-field">
