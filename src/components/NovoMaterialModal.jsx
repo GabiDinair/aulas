@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Upload } from 'lucide-react'
 import Modal from './Modal'
 import { useAppData } from '../context/AppDataContext'
@@ -8,6 +8,7 @@ const OUTRA = '__outra__'
 
 export default function NovoMaterialModal({ onClose }) {
   const { materiais, adicionarMateriais } = useAppData()
+  const inputRef = useRef(null)
 
   const categoriasExistentes = useMemo(() => {
     const usadas = materiais.map((m) => m.categoria).filter(Boolean)
@@ -71,16 +72,25 @@ export default function NovoMaterialModal({ onClose }) {
 
         <label className="form-field">
           <span>Arquivo(s)</span>
+          <div className="file-picker">
+            <button type="button" className="file-picker-btn" onClick={() => inputRef.current?.click()}>
+              Escolher arquivos
+            </button>
+            <span className="file-picker-nome">
+              {arquivos.length > 0 ? arquivos.map((f) => f.name).join(', ') : 'Nenhum arquivo escolhido'}
+            </span>
+          </div>
           <input
+            ref={inputRef}
             type="file"
             accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
             multiple
+            hidden
             onChange={(e) => setArquivos(Array.from(e.target.files ?? []))}
-            required
           />
         </label>
 
-        <button type="submit" className="modal-submit">
+        <button type="submit" className="modal-submit" disabled={arquivos.length === 0}>
           <Upload size={16} strokeWidth={2} style={{ marginRight: 6, verticalAlign: -3 }} />
           Adicionar material
         </button>
