@@ -8,7 +8,7 @@ export default function AlunoCard({ aluno, rodape, destaque, atencao }) {
   const navigate = useNavigate()
   const { hoje, aulas } = useAppData()
   const avatar = avatarDe(aluno.id, aluno.nome)
-  const idade = differenceInYears(hoje, new Date(aluno.nascimento))
+  const idade = differenceInYears(hoje, new Date(aluno.nascimento + 'T00:00:00'))
   const aniversario = aniversarioInfo(aluno.nascimento, hoje)
   const frequencia = calcularFrequenciaAluno(aulas, aluno)
   const temHistorico = frequencia.total >= MIN_AULAS_PARA_FREQUENCIA
@@ -38,7 +38,7 @@ export default function AlunoCard({ aluno, rodape, destaque, atencao }) {
         <div>
           <h3 className="aluno-nome">{aluno.nome}</h3>
           <p className="aluno-nascimento">
-            {format(new Date(aluno.nascimento), 'dd/MM/yyyy')} · {idade} anos
+            {format(new Date(aluno.nascimento + 'T00:00:00'), 'dd/MM/yyyy')} · {idade} anos
           </p>
         </div>
       </div>

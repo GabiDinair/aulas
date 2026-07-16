@@ -154,7 +154,7 @@ export default function AlunoDetalhe() {
           <Cake size={18} strokeWidth={1.6} />
           <div>
             <p className="info-label">Data de nascimento</p>
-            <p className="info-valor">{format(new Date(aluno.nascimento), 'dd/MM/yyyy')} · {idade} anos</p>
+            <p className="info-valor">{format(new Date(aluno.nascimento + 'T00:00:00'), 'dd/MM/yyyy')} · {idade} anos</p>
           </div>
         </div>
         <div className="info-card">
@@ -162,7 +162,7 @@ export default function AlunoDetalhe() {
           <div>
             <p className="info-label">Aluno(a) da professora desde</p>
             <p className="info-valor">
-              {aluno.inicioAulas ? format(new Date(aluno.inicioAulas), 'MM/yyyy') : '—'}
+              {aluno.inicioAulas ? format(new Date(aluno.inicioAulas + 'T00:00:00'), 'MM/yyyy') : '—'}
               {tempoProfessora && ` · há ${tempoProfessora}`}
             </p>
           </div>
