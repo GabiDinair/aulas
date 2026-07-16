@@ -94,6 +94,13 @@ export const MOTIVO_FALTA_LABEL = {
 export const LIMIAR_ATENCAO_FREQUENCIA = 80
 export const MIN_AULAS_PARA_FREQUENCIA = 3
 
+// Uma aula confirmada/pendente cujo horário de início já passou é considerada concluída automaticamente
+export function statusEfetivo(aula, agora) {
+  if (aula.status === 'cancelada') return 'cancelada'
+  const inicioAula = new Date(`${aula.date}T${aula.horario}`)
+  return inicioAula <= agora ? 'concluida' : aula.status
+}
+
 // --- Helpers de consulta (recebem as listas atuais do contexto) ---
 export function alunosDaTurma(alunosTurmaList, turmaId) {
   return alunosTurmaList.filter((a) => a.turmaId === turmaId)

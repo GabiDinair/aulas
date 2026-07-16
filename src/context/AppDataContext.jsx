@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useAuth } from './AuthContext'
+import { statusEfetivo } from '../data/helpers'
 
 const AppDataContext = createContext(null)
 
@@ -264,13 +265,18 @@ export function AppDataProvider({ children }) {
     setPagamentos((prev) => prev.filter((p) => !(p.alunoId === alunoId && p.mes === mes)))
   }
 
+  const aulasComStatusEfetivo = useMemo(
+    () => aulas.map((a) => ({ ...a, status: statusEfetivo(a, hoje) })),
+    [aulas, hoje]
+  )
+
   const value = {
     hoje,
     carregando,
     turmas,
     alunosIndividuais,
     alunosTurma,
-    aulas,
+    aulas: aulasComStatusEfetivo,
     materiais,
     pagamentos,
     registrarPagamento,
