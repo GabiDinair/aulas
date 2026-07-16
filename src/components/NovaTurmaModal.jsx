@@ -1,35 +1,79 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import Modal from './Modal'
 import CampoMoeda from './CampoMoeda'
 import { useAppData } from '../context/AppDataContext'
 import { CORES_TURMA_PRESET, DIAS_SEMANA } from '../data/helpers'
 
-export default function NovaTurmaModal({ onClose }) {
-  const { criarTurma } = useAppData()
-  const [form, setForm] = useState({
-    nome: '',
-    diaSemana: '2',
-    horario: '16:00',
-    duracao: '45',
-    local: '',
-    frequencia: 'semanal',
-    cor: 'sand',
-    mensalidade: 0,
-  })
+export default function NovaTurmaModal({ onClose, turmaExistente, onExcluida }) {
+  const { criarTurma, editarTurma, removerTurma } = useAppData()
+  const editando = Boolean(turmaExistente)
+  const [form, setForm] = useState(() =>
+    turmaExistente
+      ? {
+          nome: turmaExistente.nome,
+          diaSemana: String(turmaExistente.diaSemana),
+          horario: turmaExistente.horario,
+          duracao: String(turmaExistente.duracao),
+          local: turmaExistente.local,
+          frequencia: turmaExistente.frequencia,
+          cor: turmaExistente.cor,
+          mensalidade: turmaExistente.mensalidade,
+        }
+      : {
+          nome: '',
+          diaSemana: '2',
+          horario: '16:00',
+          duracao: '45',
+          local: '',
+          frequencia: 'semanal',
+          cor: 'sand',
+          mensalidade: 0,
+        }
+  )
+  const [erro, setErro] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
 
   function atualizar(campo, valor) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     if (!form.nome.trim() || !form.local.trim()) return
-    criarTurma({ ...form, quinzenaOffset: 0, mensalidade: Number(form.mensalidade) || 0 })
-    onClose()
+    setErro('')
+    setEnviando(true)
+    try {
+      const dados = { ...form, quinzenaOffset: 0, mensalidade: Number(form.mensalidade) || 0 }
+      if (editando) {
+        await editarTurma(turmaExistente.id, dados)
+      } else {
+        await criarTurma(dados)
+      }
+      onClose()
+    } catch (err) {
+      setErro(err.message)
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  async function handleExcluir() {
+    setErro('')
+    setEnviando(true)
+    try {
+      await removerTurma(turmaExistente.id)
+      onClose()
+      onExcluida?.()
+    } catch (err) {
+      setErro(err.message)
+      setEnviando(false)
+    }
   }
 
   return (
-    <Modal titulo="Criar nova turma" onClose={onClose}>
+    <Modal titulo={editando ? 'Editar turma' : 'Criar nova turma'} onClose={onClose}>
       <form className="form-grid" onSubmit={handleSubmit}>
         <label className="form-field">
           <span>Nome da turma</span>
@@ -130,8 +174,45 @@ export default function NovaTurmaModal({ onClose }) {
           </div>
         </label>
 
-        <button type="submit" className="modal-submit">Criar turma</button>
+        {editando && (mudouPadrao(form, turmaExistente)) && (
+          <p className="form-hint">
+            Mudar dia/frequência vai reorganizar as próximas aulas ainda não concluídas dessa turma.
+          </p>
+        )}
+
+        {erro && <p className="login-erro">{erro}</p>}
+
+        <button type="submit" className="modal-submit" disabled={enviando}>
+          {enviando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Criar turma'}
+        </button>
+
+        {editando && !confirmandoExclusao && (
+          <button type="button" className="btn-excluir" onClick={() => setConfirmandoExclusao(true)}>
+            <Trash2 size={14} strokeWidth={1.8} /> Excluir turma
+          </button>
+        )}
+
+        {editando && confirmandoExclusao && (
+          <div className="confirmar-exclusao">
+            <p>Tem certeza? Isso só funciona se a turma não tiver mais alunos vinculados.</p>
+            <div className="confirmar-exclusao-actions">
+              <button type="button" className="btn-excluir-confirmar" onClick={handleExcluir} disabled={enviando}>
+                Sim, excluir
+              </button>
+              <button type="button" className="link-voltar" onClick={() => setConfirmandoExclusao(false)}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
       </form>
     </Modal>
+  )
+}
+
+function mudouPadrao(form, turmaExistente) {
+  return (
+    Number(form.diaSemana) !== turmaExistente.diaSemana ||
+    form.frequencia !== turmaExistente.frequencia
   )
 }

@@ -34,9 +34,16 @@
   background: var(--turma-cor, var(--sand));
 }
 
+.turma-hero-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 .turma-hero h2 {
   font-size: 25px;
-  margin-bottom: 12px;
 }
 
 .turma-hero-info {

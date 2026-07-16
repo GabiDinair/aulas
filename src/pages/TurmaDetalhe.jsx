@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Clock, MapPin, Plus, Trophy, Users2 } from 'lucide-react'
+import { ArrowLeft, Clock, MapPin, Pencil, Plus, Trophy, Users2 } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
 import { alunosDaTurma, calcularFrequenciaAluno, corDaTurma, LIMIAR_ATENCAO_FREQUENCIA, MIN_AULAS_PARA_FREQUENCIA } from '../data/helpers'
 import AlunoCard from '../components/AlunoCard'
 import NovoAlunoModal from '../components/NovoAlunoModal'
+import NovaTurmaModal from '../components/NovaTurmaModal'
 import './TurmaDetalhe.css'
 
 export default function TurmaDetalhe() {
@@ -12,6 +13,7 @@ export default function TurmaDetalhe() {
   const navigate = useNavigate()
   const { turmas, alunosTurma, aulas } = useAppData()
   const [modalAberto, setModalAberto] = useState(false)
+  const [modalEditarAberto, setModalEditarAberto] = useState(false)
   const turma = turmas.find((t) => t.id === id)
   const alunos = alunosDaTurma(alunosTurma, id)
 
@@ -47,7 +49,12 @@ export default function TurmaDetalhe() {
       </button>
 
       <div className="turma-hero" style={{ '--turma-cor': corDaTurma(turma.cor) }}>
-        <h2>{turma.nome}</h2>
+        <div className="turma-hero-topo">
+          <h2>{turma.nome}</h2>
+          <button className="icon-btn" onClick={() => setModalEditarAberto(true)} aria-label="Editar turma">
+            <Pencil size={15} strokeWidth={1.8} />
+          </button>
+        </div>
         <div className="turma-hero-info">
           <span><Clock size={15} strokeWidth={1.7} /> {turma.diaSemanaNome}, {turma.horario} ({turma.duracao} min) · {turma.frequencia === 'quinzenal' ? 'quinzenal' : 'semanal'}</span>
           <span><MapPin size={15} strokeWidth={1.7} /> {turma.local}</span>
@@ -79,6 +86,13 @@ export default function TurmaDetalhe() {
       </div>
 
       {modalAberto && <NovoAlunoModal onClose={() => setModalAberto(false)} turmaIdPadrao={turma.id} />}
+      {modalEditarAberto && (
+        <NovaTurmaModal
+          turmaExistente={turma}
+          onClose={() => setModalEditarAberto(false)}
+          onExcluida={() => navigate('/dashboard/turmas')}
+        />
+      )}
     </div>
   )
 }

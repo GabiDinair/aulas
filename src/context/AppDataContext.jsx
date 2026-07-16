@@ -158,6 +158,23 @@ export function AppDataProvider({ children }) {
     return nova
   }
 
+  async function editarTurma(id, dados) {
+    const atualizada = await chamarApi(`/api/turmas/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados),
+    })
+    setTurmas((prev) => prev.map((t) => (t.id === id ? atualizada : t)))
+    await recarregarAulas()
+    return atualizada
+  }
+
+  async function removerTurma(id) {
+    await chamarApi(`/api/turmas/${id}`, { method: 'DELETE' })
+    setTurmas((prev) => prev.filter((t) => t.id !== id))
+    await recarregarAulas()
+  }
+
   async function criarAlunoIndividual(dados) {
     const novo = await chamarApi('/api/alunos', {
       method: 'POST',
@@ -177,6 +194,28 @@ export function AppDataProvider({ children }) {
     })
     setAlunosTurma((prev) => [...prev, novo])
     return novo
+  }
+
+  async function editarAluno(id, dados) {
+    const atualizado = await chamarApi(`/api/alunos/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados),
+    })
+    if (atualizado.turmaId) {
+      setAlunosTurma((prev) => prev.map((a) => (a.id === id ? atualizado : a)))
+    } else {
+      setAlunosIndividuais((prev) => prev.map((a) => (a.id === id ? atualizado : a)))
+    }
+    await recarregarAulas()
+    return atualizado
+  }
+
+  async function removerAluno(id) {
+    await chamarApi(`/api/alunos/${id}`, { method: 'DELETE' })
+    setAlunosIndividuais((prev) => prev.filter((a) => a.id !== id))
+    setAlunosTurma((prev) => prev.filter((a) => a.id !== id))
+    await recarregarAulas()
   }
 
   // --- Materiais ---
@@ -244,8 +283,12 @@ export function AppDataProvider({ children }) {
     salvarAnotacoes,
     salvarFaltasTurma,
     criarTurma,
+    editarTurma,
+    removerTurma,
     criarAlunoIndividual,
     criarAlunoTurma,
+    editarAluno,
+    removerAluno,
     adicionarMateriais,
     abrirMaterial,
     removerMaterial,
