@@ -1,7 +1,16 @@
 import { differenceInYears, endOfWeek, intervalToDuration, isSameDay, isWithinInterval, setYear, startOfWeek } from 'date-fns'
 
 export const CATEGORIAS_MATERIAL_PADRAO = ['Partituras', 'Métodos', 'Teoria', 'Material de apoio']
-export const TAGS_MATERIAL_SUGERIDAS = ['Clássica', 'Popular', 'Folclórica', 'Suzuki', 'Sevcik', 'Iniciante', 'Avançado']
+
+// Pastas existentes dentro de uma categoria — derivadas do campo "tag" dos materiais já enviados
+export function pastasDaCategoria(materiais, categoria) {
+  const contagem = new Map()
+  for (const m of materiais) {
+    if (m.categoria !== categoria || !m.tag) continue
+    contagem.set(m.tag, (contagem.get(m.tag) ?? 0) + 1)
+  }
+  return [...contagem.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+}
 
 export const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 

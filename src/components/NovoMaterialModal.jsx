@@ -1,12 +1,13 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Upload } from 'lucide-react'
 import Modal from './Modal'
 import { useAppData } from '../context/AppDataContext'
-import { CATEGORIAS_MATERIAL_PADRAO, TAGS_MATERIAL_SUGERIDAS } from '../data/helpers'
+import { CATEGORIAS_MATERIAL_PADRAO, pastasDaCategoria } from '../data/helpers'
 
 const OUTRA = '__outra__'
+const SEM_PASTA = '__sem_pasta__'
 
-export default function NovoMaterialModal({ onClose }) {
+export default function NovoMaterialModal({ onClose, categoriaPadrao, pastaPadrao }) {
   const { materiais, adicionarMateriais } = useAppData()
   const inputRef = useRef(null)
 
@@ -15,16 +16,31 @@ export default function NovoMaterialModal({ onClose }) {
     return [...new Set([...CATEGORIAS_MATERIAL_PADRAO, ...usadas])]
   }, [materiais])
 
-  const [categoria, setCategoria] = useState(categoriasExistentes[0] ?? OUTRA)
+  const [categoria, setCategoria] = useState(categoriaPadrao ?? categoriasExistentes[0] ?? OUTRA)
   const [categoriaCustom, setCategoriaCustom] = useState('')
-  const [tag, setTag] = useState('')
+  const [pasta, setPasta] = useState(pastaPadrao ?? SEM_PASTA)
+  const [pastaCustom, setPastaCustom] = useState('')
   const [arquivos, setArquivos] = useState([])
+
+  const pastasExistentes = useMemo(
+    () => pastasDaCategoria(materiais, categoria).map(([nome]) => nome),
+    [materiais, categoria]
+  )
+
+  // Se trocar de categoria, a pasta escolhida antes pode não existir mais nessa categoria nova
+  useEffect(() => {
+    if (pasta !== SEM_PASTA && pasta !== OUTRA && !pastasExistentes.includes(pasta)) {
+      setPasta(SEM_PASTA)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoria])
 
   function handleSubmit(e) {
     e.preventDefault()
     if (arquivos.length === 0) return
     const categoriaFinal = categoria === OUTRA ? categoriaCustom.trim() || 'Sem categoria' : categoria
-    adicionarMateriais(arquivos, { categoria: categoriaFinal, tag: tag.trim() })
+    const pastaFinal = pasta === SEM_PASTA ? '' : pasta === OUTRA ? pastaCustom.trim() : pasta
+    adicionarMateriais(arquivos, { categoria: categoriaFinal, tag: pastaFinal })
     onClose()
   }
 
@@ -55,20 +71,28 @@ export default function NovoMaterialModal({ onClose }) {
         )}
 
         <label className="form-field">
-          <span>Estilo / tag (opcional)</span>
-          <input
-            type="text"
-            list="tags-sugeridas"
-            placeholder="Ex: Clássica, Popular, Suzuki..."
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-          />
-          <datalist id="tags-sugeridas">
-            {TAGS_MATERIAL_SUGERIDAS.map((t) => (
-              <option key={t} value={t} />
+          <span>Pasta (opcional, pra agrupar arquivos parecidos)</span>
+          <select value={pasta} onChange={(e) => setPasta(e.target.value)}>
+            <option value={SEM_PASTA}>Sem pasta — arquivo solto</option>
+            {pastasExistentes.map((p) => (
+              <option key={p} value={p}>{p}</option>
             ))}
-          </datalist>
+            <option value={OUTRA}>+ Nova pasta...</option>
+          </select>
         </label>
+
+        {pasta === OUTRA && (
+          <label className="form-field">
+            <span>Nome da nova pasta</span>
+            <input
+              type="text"
+              placeholder="Ex: Canon in D, Escalas..."
+              value={pastaCustom}
+              onChange={(e) => setPastaCustom(e.target.value)}
+              autoFocus
+            />
+          </label>
+        )}
 
         <label className="form-field">
           <span>Arquivo(s)</span>
