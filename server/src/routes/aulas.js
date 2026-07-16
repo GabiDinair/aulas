@@ -142,24 +142,35 @@ router.patch(
   })
 )
 
-// Edita horário/duração de uma aula já agendada (não cancelada), opcionalmente aplicando a todas as próximas
+// Edita data/horário/duração de uma aula já agendada (não cancelada), opcionalmente aplicando a todas as próximas
 router.patch(
   '/:id/editar',
   autenticar,
   asyncHandler(async (req, res) => {
-    const { horario, duracao, escopo } = req.body ?? {}
+    const { date, horario, duracao, escopo } = req.body ?? {}
     const aula = await buscarAulaDoProfessor(req.params.id, req.professorId)
     if (!aula) return res.status(404).json({ erro: 'Aula não encontrada.' })
 
     const novoHorario = horario || aula.horario
     const novaDuracao = duracao ? Number(duracao) : aula.duracao
+    const novaData = date || aula.date
+    const mudouData = novaData !== aula.date
+
+    if (mudouData) {
+      const filtroEntidade = aula.tipo === 'turma' ? { turmaId: aula.turmaId } : { alunoId: aula.alunoId }
+      const conflito = await prisma.aula.findFirst({
+        where: { ...filtroEntidade, date: novaData, NOT: { id: aula.id } },
+      })
+      if (conflito) return res.status(409).json({ erro: 'Já existe uma aula nesse dia para essa turma/aluno.' })
+    }
 
     await prisma.aula.update({
       where: { id: aula.id },
-      data: { horario: novoHorario, duracao: novaDuracao },
+      data: { date: novaData, horario: novoHorario, duracao: novaDuracao },
     })
 
-    if (escopo === 'futuras') {
+    // Aplicar a "esta e as próximas" só faz sentido quando não estamos movendo esta ocorrência pra outra data
+    if (escopo === 'futuras' && !mudouData) {
       const filtroEntidade = aula.tipo === 'turma' ? { turmaId: aula.turmaId } : { alunoId: aula.alunoId }
       await prisma.aula.updateMany({
         where: { ...filtroEntidade, date: { gt: aula.date }, status: { not: 'cancelada' } },

@@ -41,9 +41,11 @@ function AulaCard({ aula }) {
   const [novaData, setNovaData] = useState(aula.date)
   const [novoHorario, setNovoHorario] = useState(aula.horario)
   const [editando, setEditando] = useState(false)
+  const [dataEdicao, setDataEdicao] = useState(aula.date)
   const [horarioEdicao, setHorarioEdicao] = useState(aula.horario)
   const [duracaoEdicao, setDuracaoEdicao] = useState(aula.duracao)
   const [escopoEdicao, setEscopoEdicao] = useState('unico')
+  const [erroEdicao, setErroEdicao] = useState('')
 
   function handleSalvar() {
     salvarAnotacoes(aula.id, anotacoes)
@@ -61,9 +63,14 @@ function AulaCard({ aula }) {
     setRemarcando(false)
   }
 
-  function handleConfirmarEdicao() {
-    editarAula(aula.id, { horario: horarioEdicao, duracao: duracaoEdicao, escopo: escopoEdicao })
-    setEditando(false)
+  async function handleConfirmarEdicao() {
+    setErroEdicao('')
+    try {
+      await editarAula(aula.id, { date: dataEdicao, horario: horarioEdicao, duracao: duracaoEdicao, escopo: escopoEdicao })
+      setEditando(false)
+    } catch (err) {
+      setErroEdicao(err.message)
+    }
   }
 
   const turmaAlunos = aula.tipo === 'turma' ? alunosDaTurma(alunosTurma, aula.turmaId) : []
@@ -141,8 +148,9 @@ function AulaCard({ aula }) {
 
       {editando && (
         <div className="aula-remarcar-picker">
-          <p>Editar horário e duração</p>
+          <p>Editar dia, horário e duração</p>
           <div className="aula-remarcar-campos">
+            <input type="date" value={dataEdicao} onChange={(e) => setDataEdicao(e.target.value)} />
             <input type="time" value={horarioEdicao} onChange={(e) => setHorarioEdicao(e.target.value)} />
             <input
               type="number"
@@ -152,7 +160,11 @@ function AulaCard({ aula }) {
               onChange={(e) => setDuracaoEdicao(e.target.value)}
             />
           </div>
-          <EscopoRadio escopo={escopoEdicao} setEscopo={setEscopoEdicao} />
+          {dataEdicao === aula.date && <EscopoRadio escopo={escopoEdicao} setEscopo={setEscopoEdicao} />}
+          {dataEdicao !== aula.date && (
+            <p className="aula-edicao-aviso">Mudando o dia, a alteração vale só para esta aula.</p>
+          )}
+          {erroEdicao && <p className="login-erro">{erroEdicao}</p>}
           <div className="aula-remarcar-actions">
             <button type="button" className="btn-mini btn-confirmar" onClick={handleConfirmarEdicao}>
               Salvar
