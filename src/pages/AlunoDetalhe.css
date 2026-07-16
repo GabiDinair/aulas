@@ -51,6 +51,11 @@
   flex-shrink: 0;
 }
 
+.aluno-hero-nome {
+  flex: 1;
+  min-width: 0;
+}
+
 .aluno-hero-top h2 {
   font-size: 24px;
   margin-bottom: 8px;

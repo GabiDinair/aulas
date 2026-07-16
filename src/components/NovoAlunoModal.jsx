@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import Modal from './Modal'
 import CampoMoeda from './CampoMoeda'
 import { useAppData } from '../context/AppDataContext'
@@ -6,62 +7,125 @@ import { DIAS_SEMANA, formatarMoeda } from '../data/helpers'
 
 const NIVEIS = ['Iniciante', 'Intermediário', 'Avançado']
 
-export default function NovoAlunoModal({ onClose, turmaIdPadrao }) {
-  const { turmas, criarAlunoIndividual, criarAlunoTurma } = useAppData()
-  const [modo, setModo] = useState(turmaIdPadrao ? 'turma' : 'individual')
-  const [form, setForm] = useState({
-    nome: '',
-    nascimento: '',
-    nivel: 'Iniciante',
-    inicioViolino: '',
-    telefone: '',
-    diaSemana: '2',
-    horario: '15:00',
-    local: '',
-    frequencia: 'semanal',
-    turmaId: turmaIdPadrao ?? turmas[0]?.id ?? '',
-    mensalidade: 0,
+export default function NovoAlunoModal({ onClose, turmaIdPadrao, alunoExistente, onExcluido }) {
+  const { turmas, criarAlunoIndividual, criarAlunoTurma, editarAluno, removerAluno } = useAppData()
+  const editando = Boolean(alunoExistente)
+  const [modo, setModo] = useState(() => {
+    if (alunoExistente) return alunoExistente.turmaId ? 'turma' : 'individual'
+    return turmaIdPadrao ? 'turma' : 'individual'
   })
+  const [form, setForm] = useState(() =>
+    alunoExistente
+      ? {
+          nome: alunoExistente.nome,
+          nascimento: alunoExistente.nascimento,
+          nivel: alunoExistente.nivel,
+          progresso: alunoExistente.progresso,
+          inicioViolino: alunoExistente.inicioViolino ?? '',
+          telefone: alunoExistente.telefone ?? '',
+          diaSemana: String(alunoExistente.diaSemana ?? 2),
+          horario: alunoExistente.horario ?? '15:00',
+          local: alunoExistente.local ?? '',
+          frequencia: alunoExistente.frequencia ?? 'semanal',
+          turmaId: alunoExistente.turmaId ?? turmas[0]?.id ?? '',
+          mensalidade: alunoExistente.mensalidade ?? 0,
+        }
+      : {
+          nome: '',
+          nascimento: '',
+          nivel: 'Iniciante',
+          progresso: 0,
+          inicioViolino: '',
+          telefone: '',
+          diaSemana: '2',
+          horario: '15:00',
+          local: '',
+          frequencia: 'semanal',
+          turmaId: turmaIdPadrao ?? turmas[0]?.id ?? '',
+          mensalidade: 0,
+        }
+  )
+  const [erro, setErro] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
 
   function atualizar(campo, valor) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     if (!form.nome.trim() || !form.nascimento) return
+    setErro('')
+    setEnviando(true)
 
-    if (modo === 'individual') {
-      criarAlunoIndividual({
-        nome: form.nome,
-        nascimento: form.nascimento,
-        nivel: form.nivel,
-        inicioViolino: form.inicioViolino || undefined,
-        telefone: form.telefone || undefined,
-        diaSemana: form.diaSemana,
-        horario: form.horario,
-        local: form.local || 'A definir',
-        frequencia: form.frequencia,
-        quinzenaOffset: 0,
-        mensalidade: Number(form.mensalidade) || 0,
-      })
-    } else {
-      if (!form.turmaId) return
-      criarAlunoTurma(form.turmaId, {
-        nome: form.nome,
-        nascimento: form.nascimento,
-        nivel: form.nivel,
-        inicioViolino: form.inicioViolino || undefined,
-        telefone: form.telefone || undefined,
-      })
+    try {
+      if (editando) {
+        const dados = {
+          nome: form.nome,
+          nascimento: form.nascimento,
+          nivel: form.nivel,
+          progresso: Number(form.progresso) || 0,
+          inicioViolino: form.inicioViolino || undefined,
+          telefone: form.telefone || undefined,
+          turmaId: modo === 'turma' ? form.turmaId : null,
+          diaSemana: form.diaSemana,
+          horario: form.horario,
+          local: form.local || 'A definir',
+          frequencia: form.frequencia,
+          quinzenaOffset: 0,
+          mensalidade: Number(form.mensalidade) || 0,
+        }
+        await editarAluno(alunoExistente.id, dados)
+      } else if (modo === 'individual') {
+        await criarAlunoIndividual({
+          nome: form.nome,
+          nascimento: form.nascimento,
+          nivel: form.nivel,
+          inicioViolino: form.inicioViolino || undefined,
+          telefone: form.telefone || undefined,
+          diaSemana: form.diaSemana,
+          horario: form.horario,
+          local: form.local || 'A definir',
+          frequencia: form.frequencia,
+          quinzenaOffset: 0,
+          mensalidade: Number(form.mensalidade) || 0,
+        })
+      } else {
+        if (!form.turmaId) return
+        await criarAlunoTurma(form.turmaId, {
+          nome: form.nome,
+          nascimento: form.nascimento,
+          nivel: form.nivel,
+          inicioViolino: form.inicioViolino || undefined,
+          telefone: form.telefone || undefined,
+        })
+      }
+      onClose()
+    } catch (err) {
+      setErro(err.message)
+    } finally {
+      setEnviando(false)
     }
-    onClose()
+  }
+
+  async function handleExcluir() {
+    setErro('')
+    setEnviando(true)
+    try {
+      await removerAluno(alunoExistente.id)
+      onClose()
+      onExcluido?.()
+    } catch (err) {
+      setErro(err.message)
+      setEnviando(false)
+    }
   }
 
   return (
-    <Modal titulo="Adicionar aluno" onClose={onClose}>
+    <Modal titulo={editando ? 'Editar aluno' : 'Adicionar aluno'} onClose={onClose}>
       <form className="form-grid" onSubmit={handleSubmit}>
-        {!turmaIdPadrao && (
+        {!turmaIdPadrao && !editando && (
           <div className="form-toggle">
             <button type="button" className={modo === 'individual' ? 'active' : ''} onClick={() => setModo('individual')}>
               Aula individual
@@ -91,6 +155,20 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao }) {
             </select>
           </label>
         </div>
+
+        {editando && (
+          <label className="form-field">
+            <span>Progresso musical ({form.progresso}%)</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              value={form.progresso}
+              onChange={(e) => atualizar('progresso', e.target.value)}
+            />
+          </label>
+        )}
 
         <label className="form-field">
           <span>Início no violino (se já tocava antes)</span>
@@ -172,7 +250,31 @@ export default function NovoAlunoModal({ onClose, turmaIdPadrao }) {
           </>
         )}
 
-        <button type="submit" className="modal-submit">Adicionar aluno</button>
+        {erro && <p className="login-erro">{erro}</p>}
+
+        <button type="submit" className="modal-submit" disabled={enviando}>
+          {enviando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Adicionar aluno'}
+        </button>
+
+        {editando && !confirmandoExclusao && (
+          <button type="button" className="btn-excluir" onClick={() => setConfirmandoExclusao(true)}>
+            <Trash2 size={14} strokeWidth={1.8} /> Excluir aluno
+          </button>
+        )}
+
+        {editando && confirmandoExclusao && (
+          <div className="confirmar-exclusao">
+            <p>Tem certeza? Isso apaga o histórico de aulas e pagamentos desse aluno.</p>
+            <div className="confirmar-exclusao-actions">
+              <button type="button" className="btn-excluir-confirmar" onClick={handleExcluir} disabled={enviando}>
+                Sim, excluir
+              </button>
+              <button type="button" className="link-voltar" onClick={() => setConfirmandoExclusao(false)}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
       </form>
     </Modal>
   )

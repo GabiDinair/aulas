@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { ArrowLeft, Cake, CalendarCheck2, CalendarX2, Download, MessageCircle, Music, Sparkles, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Cake, CalendarCheck2, CalendarX2, Download, MessageCircle, Music, Pencil, Sparkles, TrendingUp } from 'lucide-react'
 import { useAppData } from '../context/AppDataContext'
 import { useAuth } from '../context/AuthContext'
+import NovoAlunoModal from '../components/NovoAlunoModal'
 import {
   aniversarioInfo,
   avatarDe,
@@ -30,6 +31,7 @@ export default function AlunoDetalhe() {
   const { hoje, alunosIndividuais, alunosTurma, turmas, aulas } = useAppData()
   const { professor } = useAuth()
   const [mesRelatorio, setMesRelatorio] = useState(format(hoje, 'yyyy-MM'))
+  const [modalEditarAberto, setModalEditarAberto] = useState(false)
 
   const alunoIndividual = alunosIndividuais.find((a) => a.id === id)
   const alunoTurma = alunosTurma.find((a) => a.id === id)
@@ -125,12 +127,15 @@ export default function AlunoDetalhe() {
           <div className="aluno-hero-avatar" style={{ background: avatar.bg, color: avatar.text }}>
             {avatar.iniciais}
           </div>
-          <div>
+          <div className="aluno-hero-nome">
             <h2>{aluno.nome} {aniversario && <span className="aniversario-tag">{aniversario.hoje ? '🎂 Aniversário hoje!' : '🎉 Aniversário nesta semana'}</span>}</h2>
             <span className={`nivel-tag nivel-${aluno.nivel.toLowerCase()}`}>{aluno.nivel}</span>
             {turma && <span className="turma-tag">{turma.nome}</span>}
             {!turma && <span className="turma-tag">Aula particular · {aluno.local}</span>}
           </div>
+          <button className="icon-btn" onClick={() => setModalEditarAberto(true)} aria-label="Editar aluno">
+            <Pencil size={15} strokeWidth={1.8} />
+          </button>
         </div>
 
         <div className="aluno-progresso aluno-hero-progresso">
@@ -240,6 +245,14 @@ export default function AlunoDetalhe() {
           </div>
         ))}
       </div>
+
+      {modalEditarAberto && (
+        <NovoAlunoModal
+          alunoExistente={aluno}
+          onClose={() => setModalEditarAberto(false)}
+          onExcluido={() => navigate('/dashboard/alunos')}
+        />
+      )}
     </div>
   )
 }
